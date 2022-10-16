@@ -81,6 +81,8 @@ beforeEach(() => {
   wrapper = shallow(<MainPage {...mockProps} />)
 })
 
+REDUX-MOCK-stackoverflow
+
 ###
 COMMENT on UDEMY
   
