@@ -1,76 +1,52 @@
-import React from 'react';
-import { Provider } from 'react-redux';
-import { shallow } from 'enzyme';
-import MainPage from './MainPage';
+import { shallow } from 'enzyme'
+import MainPage from './MainPage'
 
-let wrapper;
-
+let wrapper
 beforeEach(() => {
   const mockProps = {
     onRequestRobots: jest.fn(),
     robots: [],
-    searchField: '',
-    isPending: false
+    searchFields: '',
+    isPending: false,
   }
-  wrapper = shallow(<MainPage {...mockProps}/>)
- })
+  wrapper = shallow(<MainPage {...mockProps} />)
+})
 
-it('renders without crashing', () => {
-  expect(wrapper).toMatchSnapshot();
-});
+it('renders MainPage without crashing ', () => {
+  expect(wrapper).toMatchSnapshot()
+})
 
-it('fileters Robots', () => {
-  const mockProps = {
+it('filters robots correctly', () => {
+  expect(wrapper.instance().filterRobots()).toEqual([])
+  const mockPropsWithSearchTerm = {
     onRequestRobots: jest.fn(),
-    robots: [],
+    robots: [{ id: 3, name: 'John', email: 'john@gmail.com' }],
+    searchField: 'john',
+    isPending: false,
+  }
+  const wrapperWithSearchTerm = shallow(
+    <MainPage {...mockPropsWithSearchTerm} />
+  )
+
+  expect(wrapperWithSearchTerm.instance().filterRobots()).toEqual([
+    { id: 3, name: 'John', email: 'john@gmail.com' },
+  ])
+})
+
+it('filters robots correctly with empty filtered robots', () => {
+  expect(wrapper.instance().filterRobots()).toEqual([])
+  const mockPropsWithSearchTerm = {
+    onRequestRobots: jest.fn(),
+    robots: [{ id: 3, name: 'John', email: 'john@gmail.com' }],
     searchField: 'a',
-    isPending: false
+    isPending: false,
   }
-  wrapper = shallow(<MainPage {...mockProps}/>)
-  expect(wrapper.instance().filterRobots()).toEqual([]);
-});
+  const filteredRobots = []
+  const wrapperWithSearchTerm = shallow(
+    <MainPage {...mockPropsWithSearchTerm} />
+  )
 
-it('fileters Robots correctly', () => {
-  const filteredRobots = [{
-    id: 1,
-    name: 'Leanne Graham',
-    username: 'Bret',
-    email: 'Sincere@april.biz'
-  }]
-  const mockProps = {
-    onRequestRobots: jest.fn(),
-    robots: [{
-      id: 1,
-      name: 'Leanne Graham',
-      username: 'Bret',
-      email: 'Sincere@april.biz'
-    }],
-    searchField: 'Leanne',
-    isPending: false
-  }
-  wrapper = shallow(<MainPage {...mockProps}/>)
-  expect(wrapper.instance().filterRobots()).toEqual(filteredRobots);
-});
-
-it('fileters Robots correctly 2', () => {
-  const filteredRobots = [{
-    id: 1,
-    name: 'Leanne Graham',
-    username: 'Bret',
-    email: 'Sincere@april.biz'
-  }]
-  const mockProps = {
-    onRequestRobots: jest.fn(),
-    robots: [{
-      id: 1,
-      name: 'Leanne Graham',
-      username: 'Bret',
-      email: 'Sincere@april.biz'
-    }],
-    searchField: 'Xavier',
-    isPending: false
-  }
-  wrapper = shallow(<MainPage {...mockProps}/>)
-  expect(wrapper.instance().filterRobots()).toEqual([]);
-});
-
+  expect(wrapperWithSearchTerm.instance().filterRobots()).toEqual(
+    filteredRobots
+  )
+})

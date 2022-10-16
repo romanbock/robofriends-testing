@@ -1,0 +1,107 @@
+ npm init -y
+ npm install --save-dev jest
+ npm install node-fetch
+
+  "scripts": {
+    "test": "jest --watchAll *.js"
+  },
+
+Test Driven Development: write tests then Development
+Behavioral Driven Development: We describe what a function does and what behavior we expect. "Assertions"
+
+EXAMPLES
+
+
+
+describe('googleSearch', () => {
+  it('is searching people ', () => {
+  expect(googleSearch('testtest', dbMock)).toEqual([])
+  expect('hello').toBe('hello')
+})
+})
+
+ASYNC Calls
+//Done() important due to async else test will complete before promise is returnd
+//     expect.assertions(x)!
+  it('calls swapi to get people with a Promise', (done) => {
+    expect.assertions(1)
+    getPeoplePromise(fetch).then((data) => {
+      expect(data.count).toEqual(82)
+      done()
+    })
+  })
+
+  or use return
+  it('calls swapi to get people', () => {
+    expect.assertions(1)
+
+    return getPeople(fetch).then((data) => {
+      expect(data.count).toEqual(82)
+    })
+  })
+
+
+MOCKS
+
+
+REACT TESTING
+ENZYME allows to render components in test enviroment
+https://enzymejs.github.io/enzyme/docs/api/
+shallow - only tests components without child components
+mount - fully mounts component for e.g. life cycle method TESTING
+render -  render component to static html insetad of full DOM, uses library cherio. it render children if need to
+
+SNAPSHOT TESTING
+creates snapshot component. if component is changed, test failes, due to snapshot has another version
+ifd changes in component are intentional, press u to update snapshot :)
+it('expect to render Card component', () => {
+  expect(shallow(<Card />)).toMatchSnapshot()
+})
+
+CODE COVERAGE
+https://badcodernocookie.com/support-for-the-experimental-syntax-jsx-isnt-currently-enabled/#How_to_fix
+option 1
+https://stackoverflow.com/questions/55991641/npm-test-coverage-never-exits
+"coverage": "react-scripts test --env=jsdom --watchAll=false --coverage",
+npm test -- --coverage
+
+export class App extends Components...{} to test only App component
+
+
+
+BEFOREEACH
+let wrapper
+beforeEach(() => {
+  const mockProps = {
+    onRequestRobots: jest.fn(),
+    robots: [],
+    searchFields: '',
+    isPending: false,
+  }
+  wrapper = shallow(<MainPage {...mockProps} />)
+})
+
+###
+COMMENT on UDEMY
+  
+Require, imports, etc. with node-fetch ^3
+6 Upvotes
+Tom · Lektion 276 · Vor 7 Monaten
+I have made this working with node-fetch version 3.2.1 so do not hesitate to use it as well. It is a little bit tricky but I try to describe the actions that has to be done for those who does not want to downgrade the version and would like to stick with the actual one.
+
+If you just yarn (npm) install node-fetch, it will automatically install the latest version (in my case 3.2.1).
+
+With this one you can import the libraries instead of require them:
+const fetch = require("node-fetch") becomes import fetch from "node-fetch"
+
+Unfortunately, with this one you will receive "module fails" when you try to launch the code, I suppose it is because of node before worked just with the modules. You can fix this one modifying the package.json and adding a line with "type": "modules"
+
+Unfortunately, it still will will crash if you try to test the files. What you would need is to follow the error message lines in the terminal, visit: https://jestjs.io/docs/ecmascript-modules and continue from here:
+
+We need to modify again our package.json file and the scripts part. Instead of simple  "test": "jest --watch *.js" we need to "test": "yarn node --experimental-vm-modules $(yarn bin jest)"  (or "test": "yarn node --experimental-vm-modules $(yarn bin jest) --watch *.js"  for automatic test runs - which i find helpful sometimes but crazy in some cases when you are doing some settings, it keeps launching the test and sometimes you need to manually relaunch the tests when you are changing imports, etc... - I wonder why, so my suggestion is to test manually rather than this --watching)... Amazing! now, it should work... Except there will be few another errors:
+
+You need to change the module.export s which can't be required / imported right now in the test files. Instead of module.exports = googleSearch;  you need to export { googleSearch }; . Then, in the test file instead of declaring it by const googleSearch = require("./script");  you can simply import this export by import { googleSearch } from "./script"; . Nothing else.
+
+For the scripts2.js (from asynchronous tests 2 course) you wont need to require the node-fetch because you can access the fetch (let me call it) "directly". Instead of  module.exports = { getPeople, getPeoplePromise }; , again, we will use export { getPeoplePromise, getPeople }; . Now only in the test script, instead of requiring the script2.js you need to import { getPeoplePromise, getPeople } from './script2.js' . Now in the test script you can FINALLY import the node-fetch like import fetch from 'node-fetch' . There is just one thing that needs to be imported as well in this test script and that is import { jest } from "@jest/globals";  otherwise jest wont be (let me call it) initialised and it will crash in the Mocks and Spies course on the jest.fn() as jest is not defined. Remember how we were changing the script part in the package.json from "test": "jest" to "test": "yarn node --experimental........." ? This is the reason... To fix this one, you just need that @jest/globals import.
+
+Voilaaaaaa, you can test as Andrei just with the node v3 and higher.
